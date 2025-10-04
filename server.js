@@ -1,7 +1,7 @@
 const express = require("express");
 require("dotenv").config();
 const passport = require("passport");
-const { authRoutes } = require("./src/routes");
+const { authRoute, articleRoute } = require("./src/routes");
 const connectDb = require("./src/config/db");
 const server = express();
 const { PORT, VERSION } = require("./src/config");
@@ -15,12 +15,12 @@ connectDb();
 // require("./src/middleware/auth");
 
 // ----  Routes ----
-server.use("/user", authRoutes);
-// server.use(
-//   `/${VERSION}/blog`,
-//   passport.authenticate("jwt", { session: false }),
-//   todoRoute
-// );
+server.use("/user", authRoute);
+server.use(
+  `/${VERSION}/article`,
+  passport.authenticate("jwt", { session: false }),
+  articleRoute
+);
 
 // Error handler middleware
 server.use((err, req, res, next) => {

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 // title, description, tags, author, timestamp, state, read_count, reading_time and body
-const blogSchema = new mongoose.Schema(
+const articleSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -25,7 +25,7 @@ const blogSchema = new mongoose.Schema(
     },
     state: {
       type: String,
-      enum: ["draft", "published", "archived"],
+      enum: ["draft", "published"],
       default: "draft",
     },
     reading_time: {
@@ -40,4 +40,4 @@ const blogSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Blog", blogSchema);
+module.exports = mongoose.model("Article", articleSchema);

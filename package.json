@@ -4,7 +4,8 @@
   "main": "server.js",
   "scripts": {
     "test": "jest --coverage",
-    "dev": "nodemon server.js"
+    "start": "nodemon server.js",
+    "build": "echo 'No build step required' && exit 0"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.20.0",
     "mongoose": "^8.19.0",
     "nodemon": "^3.1.10",
     "passport": "^0.7.0",

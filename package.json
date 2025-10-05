@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js",
     "test": "jest --coverage",
     "start": "node server.js",
-    "build": "echo 'No build step required' && exit 0"
+    "build": "echo 'No build step required' && exit 0",
+    "dev": "nodemon server.js"
   },
   "repository": {
     "type": "git",

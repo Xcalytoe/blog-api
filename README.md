@@ -91,11 +91,11 @@ API Endpoints
   - Returns a single article with author info embedded and increments `read_count` by 1.
   - If the article is `draft`, only the owner (authenticated) can access it.
 
-- `PUT /api/v1/articles/:id` (protected — owner only)
+- `PATCH /api/v1/articles/:id` (protected — owner only)
 
   - Edit an article (draft or published). Partial updates allowed.
 
-- `PATCH /api/v1/articles/:id/publish` (protected — owner only)
+- `PUT /api/v1/articles/:id/publish` (protected — owner only)
 
   - Update state to `published`.
 

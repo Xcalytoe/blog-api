@@ -1,5 +1,6 @@
 const passport = require("passport");
 const articleRoute = require("express").Router();
+const optionalAuth = require("../middleware/optionalAuth");
 const {
   getArticles,
   getSingleArticle,
@@ -11,7 +12,7 @@ const {
 } = require("../controllers/articleControllers");
 
 // Public routes
-articleRoute.get("/", getArticles);
+articleRoute.get("/", optionalAuth, getArticles);
 articleRoute.get("/:id", getSingleArticle);
 
 // Protected routes

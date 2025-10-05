@@ -5,11 +5,11 @@ const articleSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, "Title is required"],
     },
     body: {
       type: String,
-      required: true,
+      required: [true, "Post body is required"],
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
@@ -18,9 +18,11 @@ const articleSchema = new mongoose.Schema(
     },
     description: {
       type: String,
+      required: [true, "Description is required"],
     },
     tags: {
       type: [String],
+      required: [true, "Tag is required"],
       default: [],
     },
     state: {
@@ -39,5 +41,5 @@ const articleSchema = new mongoose.Schema(
 
   { timestamps: true }
 );
-
-module.exports = mongoose.model("Article", articleSchema);
+const Article = mongoose.model("Article", articleSchema);
+module.exports = Article;

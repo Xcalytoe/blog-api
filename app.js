@@ -1,5 +1,4 @@
 const express = require("express");
-const passport = require("passport");
 const { authRoute, articleRoute } = require("./src/routes");
 const { VERSION } = require("./src/config");
 
@@ -16,19 +15,23 @@ app.get("/", (_, res) => {
   res.status(200).json({
     message: "Welcome to the Blog API",
     version: "1.0",
+    documentation: "https://github.com/Xcalytoe/blog-api",
     endpoints: {
       auth: `/api/${VERSION}/user`,
-      blogs: `/api/${VERSION}/article`,
+      blogs: `/api/${VERSION}/articles`,
     },
   });
 });
 app.use(`/api/${VERSION}/user`, authRoute);
+app.use(`/api/${VERSION}/articles`, articleRoute);
 
-app.use(
-  `/api/${VERSION}/article`,
-  passport.authenticate("jwt", { session: false }),
-  articleRoute
-);
+//  Handle 404 (route not found)
+app.use((req, res, next) => {
+  res.status(404).json({
+    hasError: true,
+    message: `Route ${req.originalUrl} not found`,
+  });
+});
 
 // Error handler middleware
 app.use((err, req, res, next) => {

@@ -1,12 +1,17 @@
 const passport = require("passport");
-const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../config");
+const { generateToken } = require("../utils/token");
+const Article = require("../models/Article");
+const pagination = require("../utils/pagination");
+const UserModel = require("../models/User");
+
 const login = (req, res, next) => {
   passport.authenticate("login", async (err, user, info) => {
     try {
       if (err) {
         return next(err);
       }
+      console.log(user);
+
       if (!user) {
         const error = new Error("Username or password is incorrect");
         return next(error);
@@ -15,27 +20,20 @@ const login = (req, res, next) => {
       req.login(user, { session: false }, async (error) => {
         if (error) return next(error);
 
-        const body = { _id: user._id, email: user.email };
-        //You store the id and email in the payload of the JWT.
-        // You then sign the token with a secret or key (JWT_SECRET), and send back the token to the user.
-        // DO NOT STORE PASSWORDS IN THE JWT!
-        const token = jwt.sign({ user: body }, JWT_SECRET, {
-          expiresIn: "1h",
-        });
-
-        // 🔑 Save token in a cookie
-        res.cookie("jwt", token, {
-          httpOnly: true,
-          secure: false,
-          sameSite: "Strict",
-          maxAge: 3600000,
-        }); // 1 hour
+        // Generate JWT
+        const token = generateToken(user);
 
         // Return success
         return res.status(200).json({
           hasError: false,
-          data: token,
           message: "Logged in successfully",
+          token,
+          data: {
+            id: user._id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+          },
         });
       });
     } catch (error) {
@@ -45,25 +43,74 @@ const login = (req, res, next) => {
 };
 
 const createUser = (req, res, next) => {
-  const { password, confirmPassword } = req.body;
-
-  if (password !== confirmPassword) {
-    return res.status(400).json({
-      message: "Passwords do not match",
-      hasError: true,
-    });
-  }
   passport.authenticate("signup", { session: false }, (err, user, info) => {
     if (err) return next(err);
     if (!user)
       return res.status(400).json({ message: info.message, hasError: true });
 
+    const { email, first_name, last_name } = user;
     res.json({
       message: "Signup successful",
       hasError: false,
-      user,
+      data: {
+        email,
+        first_name,
+        last_name,
+      },
     });
   })(req, res, next);
 };
 
-module.exports = { login, createUser };
+const getProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const profile = await UserModel.findById(userId);
+    const { email, first_name, last_name } = profile;
+
+    res.status(200).json({
+      message: "User profile",
+      data: {
+        email,
+        first_name,
+        last_name,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Error fetching user articles",
+      error: err.message,
+    });
+  }
+};
+
+const getUserArticles = async (req, res) => {
+  try {
+    const { page = 1, state, limit = 20 } = req.query || {};
+    const userId = req.user._id;
+    let filter = {};
+    if (typeof page === "number") {
+      filter.page = page;
+    }
+    if (state) {
+      filter.state = { $regex: state, $options: "i" };
+    }
+    if (typeof limit === "number") {
+      filter.limit = limit;
+    }
+
+    const articlesData = await pagination(Article, {
+      author: userId,
+      ...filter,
+    });
+    res.status(200).json({
+      message: "User articles",
+      ...articlesData,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Error fetching user articles",
+      error: err.message,
+    });
+  }
+};
+module.exports = { login, createUser, getProfile, getUserArticles };

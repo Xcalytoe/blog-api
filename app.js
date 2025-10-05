@@ -32,7 +32,6 @@ const express = require("express");
 const passport = require("passport");
 const { authRoute, articleRoute } = require("./src/routes");
 const { VERSION } = require("./src/config");
-const { version } = require("nodeman/lib/mustache");
 
 const app = express();
 

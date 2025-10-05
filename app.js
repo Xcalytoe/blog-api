@@ -1,33 +1,3 @@
-// const express = require("express");
-// const app = express();
-
-// // require("dotenv").config();
-// const passport = require("passport");
-// const { authRoute, articleRoute } = require("./src/routes");
-// // const connectDb = require("./src/config/db");
-// const { VERSION } = require("./src/config");
-
-// app.use(express.json());
-
-// // ----  Routes ----
-// app.use("/user", authRoute);
-// app.use(
-//   `/${VERSION}/article`,
-//   passport.authenticate("jwt", { session: false }),
-//   articleRoute
-// );
-
-// // Error handler middleware
-// app.use((err, req, res, next) => {
-//   const message = err?.message || "Oops! Something went wrong";
-//   return res.status(err.statusCode || 500).json({
-//     hasError: true,
-//     message,
-//   });
-// });
-
-// module.exports = app;
-
 const express = require("express");
 const passport = require("passport");
 const { authRoute, articleRoute } = require("./src/routes");
@@ -47,15 +17,15 @@ app.get("/", (_, res) => {
     message: "Welcome to the Blog API",
     version: "1.0",
     endpoints: {
-      auth: `/${VERSION}/api/user`,
-      blogs: `/${VERSION}/api/article`,
+      auth: `/api/${VERSION}/user`,
+      blogs: `/api/${VERSION}/article`,
     },
   });
 });
-app.use(`/${VERSION}/api/user`, authRoute);
+app.use(`/api/${VERSION}/user`, authRoute);
 
 app.use(
-  `/${VERSION}/api/article`,
+  `/api/${VERSION}/article`,
   passport.authenticate("jwt", { session: false }),
   articleRoute
 );

@@ -1,27 +1,14 @@
 const mongoose = require("mongoose");
-const CONFIG = require(".");
 
-async function connectDB(url) {
-  // const url = CONFIG.DB_CONNECTION_URL;
+const connectDb = async () => {
   try {
-    await mongoose.connect(url);
+    const MONGODB_URI = process.env.DB_URL;
+    await mongoose.connect(MONGODB_URI);
+    console.log("Connected to MongoDB successfully");
   } catch (error) {
-    console.log("mongoose:", error?.message);
+    console.error("MongoDB connection error:", error);
     process.exit(1);
   }
+};
 
-  mongoose.connection.on("connected", () => {
-    console.log("DB Connected");
-  });
-  mongoose.connection.on("disconnected", () => {
-    console.log("DB disconnected");
-  });
-  mongoose.connection.on("reconnected", () => {
-    console.log("🔄 MongoDB reconnected");
-  });
-
-  mongoose.connection.on("error", (err) => {
-    console.log("DB Error:" + err?.message);
-  });
-}
-module.exports = connectDB;
+module.exports = connectDb;

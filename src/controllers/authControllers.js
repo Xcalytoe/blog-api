@@ -10,7 +10,6 @@ const login = (req, res, next) => {
       if (err) {
         return next(err);
       }
-      console.log(user);
 
       if (!user) {
         const error = new Error("Username or password is incorrect");

@@ -1,6 +1,7 @@
 const Article = require("../models/Article");
 const User = require("../models/User");
 const calculateReadingTime = require("../utils/readingTime");
+const pagination = require("../utils/pagination");
 
 const getArticles = async (req, res, next) => {
   try {
@@ -58,17 +59,19 @@ const getArticles = async (req, res, next) => {
       : { timestamp: -1 };
 
     // ===== FETCH =====
-    const articles = await Article.find(filter)
-      .populate("author", "first_name last_name email")
-      .sort(sortOptions)
-      .skip(skip)
-      .limit(parseInt(limit));
+    const articles = await pagination(Article, filter, {
+      limit,
+      skip,
+      sort: sortOptions,
+      page,
+      populate: { path: "author", select: "first_name last_name email" },
+    });
 
     const total = await Article.countDocuments(filter);
 
     // ===== RESPONSE =====
     res.status(200).json({
-      success: true,
+      hasError: false,
       currentPage: parseInt(page),
       totalPages: Math.ceil(total / limit),
       totalArticles: total,
@@ -80,7 +83,48 @@ const getArticles = async (req, res, next) => {
   }
 };
 
-const getSingleArticle = async (req, res) => {};
+const getSingleArticle = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const article = await Article.findById(id).populate(
+      "author",
+      "first_name last_name email"
+    );
+
+    if (!article) {
+      return res.status(404).json({
+        hasError: true,
+        message: "Article not found",
+      });
+    }
+
+    //  only the owner can view draft
+    if (
+      article.state === "draft" &&
+      (!req.user || req.user._id.toString() !== article.author._id.toString())
+    ) {
+      return res.status(403).json({
+        hasError: true,
+        message: "You are not authorized to view this draft",
+      });
+    }
+
+    // Increment read_count only for published articles
+    if (article.state === "published") {
+      article.read_count += 1;
+      await article.save();
+    }
+
+    res.status(200).json({
+      message: "Blog retrieved successfully",
+      hasError: false,
+      data: article,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const postArticle = async (req, res, next) => {
   try {
@@ -104,16 +148,162 @@ const postArticle = async (req, res, next) => {
       state,
     });
 
-    res.status(201).json({ success: true, data: article });
+    res.status(201).json({ hasError: false, data: article });
   } catch (error) {
     next(error);
   }
 };
 
-const updateArticle = async (req, res) => {};
-const deleteArticle = async (req, res) => {};
-const publishArticle = async (req, res) => {};
-const unpublishedArticle = async (req, res) => {};
+const updateArticle = async (req, res, next) => {
+  try {
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({
+        hasError: true,
+        message: "Missing article data",
+      });
+    }
+    const { id } = req.params;
+
+    const article = await Article.findById(id);
+
+    if (!article) {
+      return res.status(404).json({
+        hasError: true,
+        message: "Article not found",
+      });
+    }
+    // Check if user is the owner
+    if (article.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        hasError: true,
+        message: "You are not authorized to publish this article",
+      });
+    }
+
+    const updateArticle = await Article.findOneAndUpdate(
+      {
+        _id: id,
+        author: req.user._id,
+      },
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      message: "Blog updated successfully",
+      hasError: false,
+      data: updateArticle,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+const deleteArticle = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const article = await Article.findById(id);
+
+    if (!article) {
+      return res.status(404).json({
+        hasError: true,
+        message: "Article not found",
+      });
+    }
+    // Check if user is the owner
+    if (article.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        hasError: true,
+        message: "You are not authorized to delete this article",
+      });
+    }
+    await Article.findByIdAndDelete(id);
+
+    res.status(200).json({
+      message: "Article deleted successfully",
+      hasError: false,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+const publishArticle = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const article = await Article.findById(id);
+
+    if (!article) {
+      return res.status(404).json({
+        hasError: true,
+        message: "Article not found",
+      });
+    }
+    // Check if user is the owner
+    if (article.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        hasError: true,
+        message: "You are not authorized to publish this article",
+      });
+    }
+
+    // Check if article is already published
+    if (article.state === "published") {
+      return res.status(400).json({
+        hasError: true,
+        message: "Article is already published and cannot be updated",
+      });
+    }
+    article.state = "published";
+    await article.save();
+    res.status(200).json({
+      message: "Blog published successfully",
+      hasError: false,
+      data: article,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+const unpublishedArticle = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const article = await Article.findById(id);
+
+    if (!article) {
+      return res.status(404).json({
+        hasError: true,
+        message: "Article not found",
+      });
+    }
+    // Check if user is the owner
+    if (article.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        hasError: true,
+        message: "You are not authorized to publish this article",
+      });
+    }
+
+    // Check if article is already unpublished
+    if (article.state === "draft") {
+      return res.status(400).json({
+        hasError: true,
+        message: "Article is already unpublished and cannot be updated",
+      });
+    }
+    article.state = "draft";
+    await article.save();
+
+    res.status(200).json({
+      message: "Blog unpublished successfully",
+      hasError: false,
+      data: article,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = {
   getArticles,

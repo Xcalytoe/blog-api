@@ -13,7 +13,7 @@ const {
 
 // Public routes
 articleRoute.get("/", optionalAuth, getArticles);
-articleRoute.get("/:id", getSingleArticle);
+articleRoute.get("/:id", optionalAuth, getSingleArticle);
 
 // Protected routes
 articleRoute.post(

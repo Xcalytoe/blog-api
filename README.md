@@ -51,12 +51,12 @@ API Endpoints
 
 ### Auth
 
-- `POST /api/v1/auth/signup`
+- `POST /api/v1/user/create`
 
   - body: `{ first_name, last_name, email, password }`
   - response: created user (no password) + token
 
-- `POST /api/v1/auth/signin`
+- `POST /api/v1/user/login`
 
   - body: `{ email, password }`
   - response: `{ token, user }`

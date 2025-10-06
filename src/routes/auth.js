@@ -21,14 +21,4 @@ authRoute.get(
   getUserArticles
 );
 
-// authRoute.get("/logout", (req, res) => {
-//   const token = req.cookies.jwt;
-//   if (token) {
-//     // Add the token to the blacklist
-//     add(token);
-//   }
-//   res.clearCookie("jwt");
-//   res.redirect("/login");
-// });
-
 module.exports = authRoute;

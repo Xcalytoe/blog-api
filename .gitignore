@@ -6,5 +6,6 @@ logs/
 .DS_Store
 .idea/
 .vscode/
+coverage
 npm-debug.log*
    

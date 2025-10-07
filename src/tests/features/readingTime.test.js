@@ -1,4 +1,4 @@
-const calculateReadingTime = require("../../src/utils/readingTime");
+const calculateReadingTime = require("../../utils/readingTime");
 
 describe("calculateReadingTime", () => {
   test("should return 0 for empty text", () => {

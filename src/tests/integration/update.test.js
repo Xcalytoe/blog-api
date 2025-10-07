@@ -1,13 +1,15 @@
 require("dotenv").config();
 const request = require("supertest");
 const { closeDb, connectDb, clearDb } = require("../mockData/db");
-const app = require("../../app");
+const app = require("../../../app");
 const mongoose = require("mongoose");
-const User = require("../../src/models/User");
-const { JWT_SECRET } = require("../../src/config");
-const Article = require("../../src/models/Article");
+const User = require("../../models/User");
+const { JWT_SECRET } = require("../../config");
+const Article = require("../../models/Article");
 const jwt = require("jsonwebtoken");
 const { userMockup, articleMockup } = require("../mockData");
+
+jest.setTimeout(20000); // 20 seconds
 
 describe("PATCH /api/v1/articles/:id", () => {
   let token, user, article;

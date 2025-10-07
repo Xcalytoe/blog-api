@@ -130,7 +130,7 @@ const postArticle = async (req, res, next) => {
   try {
     if (!req.body) {
       const error = new Error("Missing article data");
-      error.status = 400;
+      error.statusCode = 400;
       next(error);
     }
     const { title, description, tags, body, state = "draft" } = req?.body || {};
@@ -150,6 +150,7 @@ const postArticle = async (req, res, next) => {
 
     res.status(201).json({ hasError: false, data: article });
   } catch (error) {
+    error.statusCode = 400;
     next(error);
   }
 };

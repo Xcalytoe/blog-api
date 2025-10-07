@@ -13,11 +13,15 @@ const login = (req, res, next) => {
 
       if (!user) {
         const error = new Error("Username or password is incorrect");
+        error.statusCode = 400;
         return next(error);
       }
 
       req.login(user, { session: false }, async (error) => {
-        if (error) return next(error);
+        if (error) {
+          error.statusCode = 400;
+          return next(error);
+        }
 
         // Generate JWT
         const token = generateToken(user);
@@ -36,6 +40,7 @@ const login = (req, res, next) => {
         });
       });
     } catch (error) {
+      error.statusCode = 400;
       return next(error);
     }
   })(req, res, next);
@@ -43,7 +48,10 @@ const login = (req, res, next) => {
 
 const createUser = (req, res, next) => {
   passport.authenticate("signup", { session: false }, (err, user, info) => {
-    if (err) return next(err);
+    if (err) {
+      err.statusCode = 400;
+      return next(err);
+    }
     if (!user)
       return res.status(400).json({ message: info.message, hasError: true });
 
